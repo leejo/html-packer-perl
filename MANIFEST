@@ -1,0 +1,16 @@
+.cvsignore
+Changes
+lib/HTML/Packer.pm
+Makefile.PL
+MANIFEST
+README
+t/00-load.t
+t/01-io.t
+t/html/s1-expected.html
+t/html/s1.html
+t/html/s2-expected.html
+t/html/s2.html
+t/html/s3-expected.html
+t/html/s3.html
+t/pod.t
+META.yml                                 Module meta-data (added by MakeMaker)
