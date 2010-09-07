@@ -1,14 +1,28 @@
---- #YAML:1.0
-name:                HTML-Packer
-version:             0.4
-abstract:            Another HTML code cleaner
-license:             perl
-author:              
-    - Merten Falk <nevesenin@cpan.org>
-generated_by:        ExtUtils::MakeMaker version 6.42
-distribution_type:   module
-requires:     
-    Test::More:                    0
+---
+abstract: 'Another HTML code cleaner'
+author:
+  - 'Merten Falk, C<< <nevesenin at cpan.org> >>'
+build_requires:
+  ExtUtils::MakeMaker: 6.42
+  Test::More: 0
+configure_requires:
+  ExtUtils::MakeMaker: 6.42
+distribution_type: module
+generated_by: 'Module::Install version 1.00'
+license: perl
 meta-spec:
-    url:     http://module-build.sourceforge.net/META-spec-v1.3.html
-    version: 1.3
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+module_name: HTML::Packer
+name: HTML-Packer
+no_index:
+  directory:
+    - inc
+    - t
+requires:
+  Regexp::RegGrp: 0.01_03
+  perl: 5.8.0
+resources:
+  license: http://dev.perl.org/licenses/
+  repository: http://github.com/nevesenin/html-packer-perl
+version: 0.05_01

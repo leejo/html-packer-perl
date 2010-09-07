@@ -4,137 +4,308 @@ use 5.008;
 use strict;
 use warnings;
 use Carp;
-
-use vars qw/$VERSION $PLACEHOLDER/;
-
-$VERSION = '0.4';
-
-$PLACEHOLDER = 'hp_';
+use Regexp::RegGrp;
 
 # -----------------------------------------------------------------------------
 
-sub minify {
+our $VERSION = '0.05_01';
+
+our @TAGS = (
+    'a', 'abbr', 'acronym', 'address', 'b', 'bdo', 'big', 'button', 'cite',
+    'del', 'dfn', 'em', 'font', 'i', 'input', 'ins', 'kbd', 'label', 'q',
+    's', 'samp', 'select', 'small', 'strike', 'strong', 'sub', 'sup', 'u', 'var'
+);
+
 # Some regular expressions are from HTML::Clean
-	my ( $scalarref, $opts ) = @_;
-	
-	if ( ref( $scalarref ) ne 'SCALAR' ) {
-		carp( 'First argument must be a scalarref!' );
-		return '';
-	}
-	
-	return '' if ( ${$scalarref} eq '' );
-	
-	if ( ref( $opts ) ne 'HASH' ) {
-		carp( 'Second argument must be a hashref of options! Using defaults!' ) if ( $opts );
-		$opts = {
-			'remove_comments'	=> 0,
-			'remove_newlines'	=> 0,
-			'do_javascript'		=> '',	# minify, shrink, base62
-			'do_stylesheet'		=> '',	# pretty, minify
-		};
-	}
-	else {
-		$opts->{'remove_comments'}	= $opts->{'remove_comments'} ? 1 : 0;
-		$opts->{'remove_newlines'}	= $opts->{'remove_newlines'} ? 1 : 0;
-		$opts->{'do_javascript'}	= grep( $opts->{'do_javascript'}, ( 'minify', 'shrink', 'base62' ) ) ? $opts->{'do_javascript'} : '';
-		$opts->{'do_stylesheet'}	= grep( $opts->{'do_stylesheet'}, ( 'minify', 'pretty' ) ) ? $opts->{'do_stylesheet'} : '';
-	}
-	
-	if ( $opts->{'do_javascript'} ) {
-		eval( 'require JavaScript::Packer;' );
-		
-		if ( $@ ) {
-			$opts->{'do_javascript'} = '';
-		}
-	}
-	if ( $opts->{'do_stylesheet'} ) {
-		eval( 'require CSS::Packer;' );
-		
-		if ( $@ ) {
-			$opts->{'do_stylesheet'} = '';
-		}
-	}
-	
-	${$scalarref} =~ s/<!--~\Q$PLACEHOLDER\E\d+~-->//gsm;
-	${$scalarref} =~ s/<!--([^#].*?)?-->//gsm if ( $opts->{'remove_comments'} );
-	
-	my $unclean = {};
-	
-	my $_replace_unclean = sub {
-		my ( $opening, $content, $closing ) = @_;
-		
-		return '' unless ( $opening );
-		
-		my $key = $PLACEHOLDER . scalar( keys( %$unclean ) );
-		
-		if ( not $content and not $closing ) {
-			$unclean->{$key} = $opening;
-		}
-		else {
-			if ( $content ) {
-				if ( $opening =~ /<\s*script[^>]*(?:java|ecma)script[^>]*>/ and $opts->{'do_javascript'} ) {
-					JavaScript::Packer::minify( \$content, { 'compress' => $opts->{'do_javascript'} } );
-					$content = '/*<![CDATA[*/' . $content . '/*]]>*/';
-				}
-				elsif ( $opening =~ /<\s*style[^>]*text\/css[^>]*>/ and $opts->{'do_stylesheet'} ) {
-					CSS::Packer::minify( \$content, { 'compress' => $opts->{'do_stylesheet'} } );
-				}
-			}
-			else {
-				$content = '';
-			}
-			$opening =~ s/[^\S\n]{2,}/ /msg;
-			$opening =~ s/\s+>/>/sgm;
-			$opening =~ s/<\s+/</sgm;
-			$closing =~ s/[^\S\n]{2,}/ /msg;
-			$closing =~ s/\s+>/>/sgm;
-			$closing =~ s/<\s+/</sgm;
-			$closing =~ s/<\/\s+/<\//sgm;
-			
-			$unclean->{$key} = $opening . $content . $closing;
-		}
-		
-		return '<!--~' . $key . '~-->';
-	};
-	
-	${$scalarref} =~ s/(<\!DOCTYPE[^>]*>)/&$_replace_unclean( $& )/xmse;
-	
-	${$scalarref} =~ s/(<\s*(pre|code|textarea|script|style)[^>]*>)(.*?)(<\s*\/\2[^>]*>)/&$_replace_unclean( $1, $3, $4 )/gmsie;
-	
-	my @tags = (
-		'a', 'abbr', 'acronym', 'address', 'b', 'bdo', 'big', 'button', 'cite',
-		'del', 'dfn', 'em', 'font', 'i', 'input', 'ins', 'kbd', 'label', 'q',
-		's', 'samp', 'select', 'small', 'strike', 'strong', 'sub', 'sup', 'u', 'var'
-	);
-	
-	${$scalarref} =~ s/^\s*//sg;
-	${$scalarref} =~ s/\s*$//sg;
-	${$scalarref} =~ s/[^\S\n]*$//smg;
-	${$scalarref} =~ s/^[^\S\n]*//smg;
-	${$scalarref} =~ s/[^\S\n]*\n/\n/sg;
-	${$scalarref} =~ s/[^\S\n]{2,}/ /sg;
-	${$scalarref} =~ s/\n{2,}/\n/sg;
-	${$scalarref} =~ s/\s+>/>/sg;
-	${$scalarref} =~ s/<\s+/</sg;
-	${$scalarref} =~ s/<\/\s+/<\//sg;
-	
-	if ( $opts->{'remove_newlines'} ) {
-		foreach ( @tags ) {
-			${$scalarref} =~ s/[^\S]+(<\s*\/?\s*\Q$_\E( [^>]*)?>)/ $1/ismg;
-			${$scalarref} =~ s/(<\s*\/?\s*\Q$_\E( [^>]*)?>)[^\S]+/$1 /ismg;
-		}
-		
-		${$scalarref} =~ s/>\n</></g;
-		${$scalarref} =~ s/([^>])\n</$1</g;
-		${$scalarref} =~ s/>\n([^<])/>$1/g;
-		${$scalarref} =~ s/(\w)\n(\w)/$1 $2/g;
-		${$scalarref} =~ s/([^>])\n([^>])/$1 $2/g;
-		${$scalarref} =~ s/\n//g;
-	}
-	
-	${$scalarref} =~ s/<!--~(\Q$PLACEHOLDER\E\d+)~-->/$unclean->{$1}/gsme;
-	
-	${$scalarref} =~ s/[^\S\n]*(<!--([^#].*?)?-->)[^\S\n]*/$1/gsm unless ( $opts->{'remove_comments'} );
+
+our $COMMENT    = '(\s*)(<!--(?:[^#].*?)?-->)(\s*)';
+
+our $DOCTYPE    = '<\!DOCTYPE[^>]*>';
+
+our $DONT_CLEAN = '(<\s*(pre|code|textarea|script|style)[^>]*>)(.*?)(<\s*\/\2[^>]*>)';
+
+our $WHITESPACES = [
+    {
+        regexp      => qr/^\s*/s,
+        replacement => ''
+    },
+    {
+        regexp      => qr/\s*$/s,
+        replacement => ''
+    },
+    {
+        regexp      => '^[^\S\n]*',
+        replacement => ''
+    },
+    {
+        regexp      => '[^\S\n]*$',
+        replacement => ''
+    },
+    {
+        regexp      => qr/(?<=>)[^<>]*(?=<)/sm,
+        replacement => sub {
+            my $match = $_[0]->{match};
+
+            $match =~ s/[^\S\n]{2,}/ /sg;
+            $match =~ s/\s*\n+\s*/\n/sg;
+
+            return $match;
+        }
+    },
+    {
+        regexp      => qr/<\s*(\/)?\s*/s,
+        replacement => sub {
+            return sprintf( '<%s', $_[0]->{submatches}->[0] );
+        }
+    },
+    {
+        regexp      => qr/\s*(\/)?\s*>/s,
+        replacement => sub {
+            return sprintf( '%s>', $_[0]->{submatches}->[0] );
+        }
+    }
+];
+
+our $NEWLINES_TAGS = [
+    {
+        regexp      => '(\s*)(<\s*\/?\s*(?:' . join( '|', @TAGS ) . ')[^>]*>)(\s*)',
+        replacement => sub {
+            return sprintf( '%s%s%s', $_[0]->{submatches}->[0] ? ' ' : '', $_[0]->{submatches}->[1], $_[0]->{submatches}->[2] ? ' ' : '' );
+        },
+        modifier    => 'is'
+    }
+];
+
+our $NEWLINES = [
+    {
+        regexp      => '(.)\n(.)',
+        replacement => sub {
+            my ( $pre, $post ) = @{$_[0]->{submatches}};
+
+            my $ret;
+
+            if ( $pre eq '>' or $post eq '<' ) {
+                $ret = $pre . $post;
+            }
+            elsif ( $pre =~ /[\w-]/ and $post =~ /[\w-]/ ) {
+                $ret = $pre . ' ' . $post;
+            }
+            else {
+                $ret = $pre . $post;
+            }
+
+            return $ret;
+        }
+    }
+];
+
+sub init {
+    my $class = shift;
+    my $self  = {};
+
+    eval( 'use JavaScript::Packer;' );
+    $self->{can_do_javascript} = $@ ? 0 : 1;
+    eval( 'use CSS::Packer;' );
+    $self->{can_do_stylesheet} = $@ ? 0 : 1;
+
+    $self->{whitespaces}->{reggrp_data}   = $WHITESPACES;
+    $self->{newlines}->{reggrp_data}      = $NEWLINES;
+    $self->{newlines_tags}->{reggrp_data} = $NEWLINES_TAGS;
+    $self->{global}->{reggrp_data}        = [
+        {
+            regexp      => $DOCTYPE,
+            replacement => sub {
+                return '<!--~' . $_[0]->{store_index} . '~-->';
+            },
+            store => sub {
+                my $doctype = $_[0]->{match};
+
+                $doctype =~ s/\s+/ /gsm;
+
+                return $doctype;
+            }
+        },
+        {
+            regexp      => $COMMENT,
+            replacement => sub {
+                my $opts            = $_[0]->{opts} || {};
+                my $remove_comments = _get_opt( $opts, 'remove_comments' );
+                my $remove_newlines = _get_opt( $opts, 'remove_newlines' );
+
+                return $remove_comments ? (
+                    $remove_newlines ? '' : (
+                        ( $_[0]->{submatches}->[0] =~ /\n/s or $_[0]->{submatches}->[2] =~ /\n/s ) ? "\n" : ''
+                    )
+                ) : '<!--~' . $_[0]->{store_index} . '~-->';
+            },
+            store => sub {
+                my $opts            = $_[0]->{opts} || {};
+                my $remove_comments = _get_opt( $opts, 'remove_comments' );
+                my $remove_newlines = _get_opt( $opts, 'remove_newlines' );
+
+                my $ret = $remove_comments ? '' : (
+                     ( ( not $remove_newlines and $_[0]->{submatches}->[0] =~ /\n/s ) ? "\n" : '' ) .
+                     $_[0]->{submatches}->[1] .
+                     ( ( not $remove_newlines and $_[0]->{submatches}->[2] =~ /\n/s ) ? "\n" : '' )
+                );
+
+                return $ret;
+            }
+        },
+        {
+            regexp      => $DONT_CLEAN,
+            replacement => sub {
+                return '<!--~' . $_[0]->{store_index} . '~-->';
+            },
+            store => sub {
+                my ( $opening, $content, $closing ) = @{$_[0]->{submatches}};
+                my $opts                            = $_[0]->{opts} || {};
+
+                if ( $content ) {
+                    if ( $opening =~ /<\s*script[^>]*(?:java|ecma)script[^>]*>/ and $self->{javascript_packer} ) {
+                        my $do_javascript = _get_opt( $opts, 'do_javascript' );
+                        if ( $do_javascript ) {
+                            $self->{javascript_packer}->minify( \$content, { compress => $do_javascript } );
+                            $content = '/*<![CDATA[*/' . $content . '/*]]>*/';
+                        }
+                    }
+                    elsif ( $opening =~ /<\s*style[^>]*text\/css[^>]*>/ and $self->{css_packer} ) {
+                        my $do_stylesheet = _get_opt( $opts, 'do_stylesheet' );
+                        if ( $do_stylesheet ) {
+                            $self->{css_packer}->minify( \$content, { compress => $do_stylesheet } );
+                        }
+                    }
+                }
+                else {
+                    $content = '';
+                }
+
+                # I don't like this, but
+                # $self->{whitespaces}->{reggrp}->exec( \$opening );
+                # will not work. It isn't initialized jet.
+                # If someone has a better idea, please let me know
+                $self->_process_wrapper( 'whitespaces', \$opening );
+                $self->_process_wrapper( 'whitespaces', \$closing );
+
+                return $opening . $content . $closing;
+            },
+            modifier    => 'ism'
+        }
+    ];
+
+    map {
+        $self->{$_}->{reggrp} = Regexp::RegGrp->new( { reggrp => $self->{$_}->{reggrp_data} } );
+    } ( 'newlines', 'newlines_tags', 'whitespaces' );
+
+    $self->{global}->{reggrp} = Regexp::RegGrp->new(
+        {
+            reggrp          => $self->{global}->{reggrp_data},
+            restore_pattern => qr/<!--~(\d+)~-->/
+        }
+    );
+
+    bless( $self, $class );
+
+    return $self;
+}
+
+sub minify {
+    my ( $self, $input, $opts );
+
+    unless (
+        ref( $_[0] ) and
+        ref( $_[0] ) eq __PACKAGE__
+    ) {
+        $self = __PACKAGE__->init();
+
+        shift( @_ ) unless ( ref( $_[0] ) );
+
+        ( $input, $opts ) = @_;
+    }
+    else {
+        ( $self, $input, $opts ) = @_;
+    }
+
+    if ( ref( $input ) ne 'SCALAR' ) {
+        carp( 'First argument must be a scalarref!' );
+        return undef;
+    }
+
+    my $html    = \'';
+    my $cont    = 'void';
+
+    if ( defined( wantarray ) ) {
+        my $tmp_input = ref( $input ) ? ${$input} : $input;
+
+        $html   = \$tmp_input;
+        $cont   = 'scalar';
+    }
+    else {
+        $html = ref( $input ) ? $input : \$input;
+    }
+
+    if ( $self->{can_do_javascript} and not $self->{javascript_packer_isset} ) {
+        $self->{javascript_packer} = JavaScript::Packer->init();
+        $self->{javascript_packer_isset} = 1;
+    }
+
+    if ( $self->{can_do_stylesheet} and not $self->{stylesheet_packer_isset} ) {
+        $self->{stylesheet_packer} = JavaScript::Packer->init();
+        $self->{stylesheet_packer_isset} = 1;
+    }
+
+    if ( ref( $opts ) ne 'HASH' ) {
+        carp( 'Second argument must be a hashref of options! Using defaults!' ) if ( $opts );
+        $opts = {
+            remove_comments => 0,
+            remove_newlines => 0,
+            do_javascript   => '',  # minify, shrink, base62
+            do_stylesheet   => '',  # pretty, minify
+        };
+    }
+    else {
+        $opts->{remove_comments} = $opts->{remove_comments} ? 1 : 0;
+        $opts->{remove_newlines} = $opts->{remove_newlines} ? 1 : 0;
+        $opts->{do_javascript}   = (
+            grep( $opts->{do_javascript}, ( 'minify', 'shrink', 'base62' ) ) &&
+            $self->{javascript_packer}
+        ) ? $opts->{do_javascript} : '';
+
+        $opts->{do_stylesheet}      = (
+            grep( $opts->{do_stylesheet}, ( 'minify', 'pretty' ) ) &&
+            $self->{stylesheet_packer}
+        ) ? $opts->{do_stylesheet} : '';
+    }
+
+    $self->{global}->{reggrp}->exec( $html, $opts );
+    $self->{whitespaces}->{reggrp}->exec( $html );
+    if ( $opts->{remove_newlines} ) {
+        $self->{newlines_tags}->{reggrp}->exec( $html );
+        $self->{newlines}->{reggrp}->exec( $html );
+    }
+
+    $self->{global}->{reggrp}->restore_stored( $html );
+
+    return ${$html} if ( $cont eq 'scalar' );
+}
+
+sub _get_opt {
+    my ( $opts_hash, $opt ) = @_;
+
+    $opts_hash  ||= {};
+    $opt        ||= '';
+
+    my $ret = '';
+
+    $ret = $opts_hash->{$opt} if ( defined( $opts_hash->{$opt} ) );
+
+    return $ret;
+}
+
+sub _process_wrapper {
+    my ( $self, $reg_name, $in, $opts ) = @_;
+
+    $self->{$reg_name}->{reggrp}->exec( $in, $opts );
 }
 
 1;
@@ -147,21 +318,27 @@ HTML::Packer - Another HTML code cleaner
 
 =head1 VERSION
 
-Version 0.4
-
-=head1 SYNOPSIS
-
-    use HTML::Packer;
-
-    HTML::Packer::minify( $scalarref, $opts );
+Version 0.05_01
 
 =head1 DESCRIPTION
 
 A HTML Compressor.
 
-=head1 FUNCTIONS
+=head1 SYNOPSIS
 
-=head2 HTML::Packer::minify( $scalarref, $opts );
+    use HTML::Packer;
+
+    my $packer = HTML::Packer->init();
+
+    $packer->minify( $scalarref, $opts );
+
+To return a scalar without changing the input simply use (e.g. example 2):
+
+    my $ret = $packer->minify( $scalarref, $opts );
+
+For backward compatibility it is still possible to call 'minify' as a function:
+
+    HTML::Packer::minify( $scalarref, $opts );
 
 First argument must be a scalarref of HTML-Code.
 Second argument must be a hashref of options. Possible options are
@@ -208,7 +385,7 @@ perldoc HTML::Packer
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2009 Merten Falk, all rights reserved.
+Copyright 2009 - 2010 Merten Falk, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

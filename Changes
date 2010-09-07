@@ -1,14 +1,20 @@
 Revision history for HTML-Packer
 
-0.1	2009-02-09
-	First version, released on an unsuspecting world.
+0.05_01
+    - Moved regexp grouping stuff to Regexp::RegGrp.
+    - Added object-oriented interface.
+    - Switched tabs to soft tabs.
+    - Switched to Module::Install.
 
-0.2	2009-02-10
-	Added some tests
-	
-0.3	2009-02-11
-	Typo fix in documentation
-	
-0.4	2009-02-15
-	- Another embarrassing typo fix in documentation
-	- Updated README file
+0.4     2009-02-15
+    - Another embarrassing typo fix in documentation
+    - Updated README file
+
+0.3     2009-02-11
+    - Typo fix in documentation
+
+0.2     2009-02-10
+    - Added some tests
+
+0.1     2009-02-09
+    - First version, released on an unsuspecting world.
