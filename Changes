@@ -1,5 +1,8 @@
 Revision history for HTML-Packer
 
+0.05_02 2010-09-13
+    - Changed requirements to Regexp::RegGrp 0.0201
+
 0.05_01
     - Moved regexp grouping stuff to Regexp::RegGrp.
     - Added object-oriented interface.
