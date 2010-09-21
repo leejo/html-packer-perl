@@ -1,5 +1,11 @@
 Revision history for HTML-Packer
 
+0.05_03 2010-09-21
+    - Added option to switch off compression via comment.
+    - Added support for conditional comments.
+    - Changed requirements to Regexp::RegGrp 0.0203
+    - Added tests.
+
 0.05_02 2010-09-13
     - Changed requirements to Regexp::RegGrp 0.0201
 

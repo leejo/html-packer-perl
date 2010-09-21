@@ -24,4 +24,10 @@ t/html/s2-expected.html
 t/html/s2.html
 t/html/s3-expected.html
 t/html/s3.html
+t/html/s4-expected.html
+t/html/s4.html
+t/html/s5-expected.html
+t/html/s5.html
+t/html/s6-expected.html
+t/html/s6.html
 t/pod.t

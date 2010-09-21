@@ -8,7 +8,7 @@ use Regexp::RegGrp;
 
 # -----------------------------------------------------------------------------
 
-our $VERSION = '0.05_02';
+our $VERSION = '0.05_03';
 
 our @TAGS = (
     'a', 'abbr', 'acronym', 'address', 'b', 'bdo', 'big', 'button', 'cite',
@@ -18,13 +18,15 @@ our @TAGS = (
 
 # Some regular expressions are from HTML::Clean
 
-our $COMMENT    = '(\s*)(<!--(?:[^#].*?)?-->)(\s*)';
+our $COMMENT        = '((?>\s*))(<!--(?:(?:[^#\[]|(?! google_ad_section_)).*?)?-->)((?>\s*))';
 
-our $DOCTYPE    = '<\!DOCTYPE[^>]*>';
+our $PACKER_COMMENT = '<!--\s*HTML::Packer\s*(\w+)\s*-->';
 
-our $DONT_CLEAN = '(<\s*(pre|code|textarea|script|style)[^>]*>)(.*?)(<\s*\/\2[^>]*>)';
+our $DOCTYPE        = '<\!DOCTYPE[^>]*>';
 
-our $WHITESPACES = [
+our $DONT_CLEAN     = '(<\s*(pre|code|textarea|script|style)[^>]*>)(.*?)(<\s*\/\2[^>]*>)';
+
+our $WHITESPACES    = [
     {
         regexp      => qr/^\s*/s,
         replacement => ''
@@ -34,12 +36,14 @@ our $WHITESPACES = [
         replacement => ''
     },
     {
-        regexp      => '^[^\S\n]*',
-        replacement => ''
+        regexp      => '^\s*',
+        replacement => '',
+        modifier    => 'm'
     },
     {
-        regexp      => '[^\S\n]*$',
-        replacement => ''
+        regexp      => '\s*$',
+        replacement => '',
+        modifier    => 'm'
     },
     {
         regexp      => qr/(?<=>)[^<>]*(?=<)/sm,
@@ -53,16 +57,18 @@ our $WHITESPACES = [
         }
     },
     {
-        regexp      => qr/<\s*(\/)?\s*/s,
+        regexp      => '<\s*(\/)?\s*',
         replacement => sub {
             return sprintf( '<%s', $_[0]->{submatches}->[0] );
-        }
+        },
+        modifier    => 's'
     },
     {
-        regexp      => qr/\s*(\/)?\s*>/s,
+        regexp      => '\s*(\/)?\s*>',
         replacement => sub {
             return sprintf( '%s>', $_[0]->{submatches}->[0] );
-        }
+        },
+        modifier    => 's'
     }
 ];
 
@@ -103,9 +109,13 @@ sub init {
     my $class = shift;
     my $self  = {};
 
-    eval( 'use JavaScript::Packer;' );
+    eval {
+        require JavaScript::Packer;
+    };
     $self->{can_do_javascript} = $@ ? 0 : 1;
-    eval( 'use CSS::Packer;' );
+    eval {
+        require CSS::Packer;
+    };
     $self->{can_do_stylesheet} = $@ ? 0 : 1;
 
     $self->{whitespaces}->{reggrp_data}   = $WHITESPACES;
@@ -133,7 +143,7 @@ sub init {
                 my $remove_newlines = _get_opt( $opts, 'remove_newlines' );
 
                 return $remove_comments ? (
-                    $remove_newlines ? '' : (
+                    $remove_newlines ? ' ' : (
                         ( $_[0]->{submatches}->[0] =~ /\n/s or $_[0]->{submatches}->[2] =~ /\n/s ) ? "\n" : ''
                     )
                 ) : '<!--~' . $_[0]->{store_index} . '~-->';
@@ -158,8 +168,8 @@ sub init {
                 return '<!--~' . $_[0]->{store_index} . '~-->';
             },
             store => sub {
-                my ( $opening, $content, $closing ) = @{$_[0]->{submatches}};
-                my $opts                            = $_[0]->{opts} || {};
+                my ( $opening, undef, $content, $closing )  = @{$_[0]->{submatches}};
+                my $opts                                    = $_[0]->{opts} || {};
 
                 if ( $content ) {
                     if ( $opening =~ /<\s*script[^>]*(?:java|ecma)script[^>]*>/ and $self->{javascript_packer} ) {
@@ -173,6 +183,7 @@ sub init {
                         my $do_stylesheet = _get_opt( $opts, 'do_stylesheet' );
                         if ( $do_stylesheet ) {
                             $self->{css_packer}->minify( \$content, { compress => $do_stylesheet } );
+                            $content = "\n" . $content if ( $do_stylesheet eq 'pretty' );
                         }
                     }
                 }
@@ -244,23 +255,30 @@ sub minify {
         $html = ref( $input ) ? $input : \$input;
     }
 
+    $self->{javascript_packer} = undef;
     if ( $self->{can_do_javascript} and not $self->{javascript_packer_isset} ) {
-        $self->{javascript_packer} = JavaScript::Packer->init();
+        $self->{javascript_packer} = eval {
+            JavaScript::Packer->init();
+        };
         $self->{javascript_packer_isset} = 1;
     }
 
-    if ( $self->{can_do_stylesheet} and not $self->{stylesheet_packer_isset} ) {
-        $self->{stylesheet_packer} = JavaScript::Packer->init();
-        $self->{stylesheet_packer_isset} = 1;
+    $self->{css_packer} = undef;
+    if ( $self->{can_do_stylesheet} and not $self->{css_packer_isset} ) {
+        $self->{css_packer} = eval {
+            CSS::Packer->init();
+        };
+        $self->{css_packer_isset} = 1;
     }
 
     if ( ref( $opts ) ne 'HASH' ) {
         carp( 'Second argument must be a hashref of options! Using defaults!' ) if ( $opts );
         $opts = {
-            remove_comments => 0,
-            remove_newlines => 0,
-            do_javascript   => '',  # minify, shrink, base62
-            do_stylesheet   => '',  # pretty, minify
+            remove_comments     => 0,
+            remove_newlines     => 0,
+            do_javascript       => '',  # minify, shrink, base62
+            do_stylesheet       => '',  # pretty, minify
+            no_compress_comment => 0
         };
     }
     else {
@@ -271,14 +289,23 @@ sub minify {
             $self->{javascript_packer}
         ) ? $opts->{do_javascript} : '';
 
-        $opts->{do_stylesheet}      = (
+        $opts->{do_stylesheet}  = (
             grep( $opts->{do_stylesheet}, ( 'minify', 'pretty' ) ) &&
-            $self->{stylesheet_packer}
+            $self->{css_packer}
         ) ? $opts->{do_stylesheet} : '';
+
+        $opts->{no_compress_comment} = $opts->{no_compress_comment} ? 1 : 0;
+    }
+
+    if ( not $opts->{no_compress_comment} and ${$html} =~ /$PACKER_COMMENT/s ) {
+        my $compress = $1;
+        if ( $compress eq '_no_compress_' ) {
+            return ( $cont eq 'scalar' ) ? ${$html} : undef;
+        }
     }
 
     $self->{global}->{reggrp}->exec( $html, $opts );
-    $self->{whitespaces}->{reggrp}->exec( $html );
+    $self->{whitespaces}->{reggrp}->exec( $html, $opts );
     if ( $opts->{remove_newlines} ) {
         $self->{newlines_tags}->{reggrp}->exec( $html );
         $self->{newlines}->{reggrp}->exec( $html );
@@ -318,7 +345,7 @@ HTML::Packer - Another HTML code cleaner
 
 =head1 VERSION
 
-Version 0.05_02
+Version 0.05_03
 
 =head1 DESCRIPTION
 
@@ -364,6 +391,14 @@ This option only takes effect if L<JavaScript::Packer> is installed.
 Defines compression level for CSS. Possible values are 'minify' and 'pretty'.
 Default is no compression for CSS.
 This option only takes effect if L<CSS::Packer> is installed.
+
+=item no_compress_comment
+
+If not set to a true value it is allowed to set a HTML comment that prevents the input being packed.
+
+    <!-- HTML::Packer _no_compress_ -->
+
+Is set by default.
 
 =back
 
