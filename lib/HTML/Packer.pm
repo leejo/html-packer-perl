@@ -1,6 +1,6 @@
 package HTML::Packer;
 
-use 5.008;
+use 5.008009;
 use strict;
 use warnings;
 use Carp;
@@ -8,7 +8,7 @@ use Regexp::RegGrp;
 
 # -----------------------------------------------------------------------------
 
-our $VERSION = '0.05_03';
+our $VERSION = '0.05_04';
 
 our @TAGS = (
     'a', 'abbr', 'acronym', 'address', 'b', 'bdo', 'big', 'button', 'cite',
@@ -345,7 +345,7 @@ HTML::Packer - Another HTML code cleaner
 
 =head1 VERSION
 
-Version 0.05_03
+Version 0.05_04
 
 =head1 DESCRIPTION
 

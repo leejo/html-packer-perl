@@ -1,5 +1,8 @@
 Revision history for HTML-Packer
 
+0.05_04 2010-10-05
+    - Changed required perl version to 5.8.9.
+
 0.05_03 2010-09-21
     - Added option to switch off compression via comment.
     - Added support for conditional comments.
