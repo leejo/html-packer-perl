@@ -8,7 +8,7 @@ use Regexp::RegGrp;
 
 # -----------------------------------------------------------------------------
 
-our $VERSION = '0.05_04';
+our $VERSION = '0.05_05';
 
 our @TAGS = (
     'a', 'abbr', 'acronym', 'address', 'b', 'bdo', 'big', 'button', 'cite',
@@ -112,11 +112,13 @@ sub init {
     eval {
         require JavaScript::Packer;
     };
-    $self->{can_do_javascript} = $@ ? 0 : 1;
+    $self->{can_do_javascript}  = $@ ? 0 : 1;
+    $self->{javascript_packer}  = undef;
     eval {
         require CSS::Packer;
     };
-    $self->{can_do_stylesheet} = $@ ? 0 : 1;
+    $self->{can_do_stylesheet}  = $@ ? 0 : 1;
+    $self->{css_packer}         = undef;
 
     $self->{whitespaces}->{reggrp_data}   = $WHITESPACES;
     $self->{newlines}->{reggrp_data}      = $NEWLINES;
@@ -175,8 +177,11 @@ sub init {
                     if ( $opening =~ /<\s*script[^>]*(?:java|ecma)script[^>]*>/ and $self->{javascript_packer} ) {
                         my $do_javascript = _get_opt( $opts, 'do_javascript' );
                         if ( $do_javascript ) {
+                            my $no_cdata = _get_opt( $opts, 'no_cdata' );
                             $self->{javascript_packer}->minify( \$content, { compress => $do_javascript } );
-                            $content = '/*<![CDATA[*/' . $content . '/*]]>*/';
+                            unless ( $no_cdata ) {
+                                $content = '/*<![CDATA[*/' . $content . '/*]]>*/';
+                            }
                         }
                     }
                     elsif ( $opening =~ /<\s*style[^>]*text\/css[^>]*>/ and $self->{css_packer} ) {
@@ -255,7 +260,6 @@ sub minify {
         $html = ref( $input ) ? $input : \$input;
     }
 
-    $self->{javascript_packer} = undef;
     if ( $self->{can_do_javascript} and not $self->{javascript_packer_isset} ) {
         $self->{javascript_packer} = eval {
             JavaScript::Packer->init();
@@ -263,7 +267,6 @@ sub minify {
         $self->{javascript_packer_isset} = 1;
     }
 
-    $self->{css_packer} = undef;
     if ( $self->{can_do_stylesheet} and not $self->{css_packer_isset} ) {
         $self->{css_packer} = eval {
             CSS::Packer->init();
@@ -278,7 +281,8 @@ sub minify {
             remove_newlines     => 0,
             do_javascript       => '',  # minify, shrink, base62
             do_stylesheet       => '',  # pretty, minify
-            no_compress_comment => 0
+            no_compress_comment => 0,
+            no_cdata            => 0
         };
     }
     else {
@@ -294,7 +298,8 @@ sub minify {
             $self->{css_packer}
         ) ? $opts->{do_stylesheet} : '';
 
-        $opts->{no_compress_comment} = $opts->{no_compress_comment} ? 1 : 0;
+        $opts->{no_compress_comment}    = $opts->{no_compress_comment} ? 1 : 0;
+        $opts->{no_cdata}               = $opts->{no_cdata} ? 1 : 0;
     }
 
     if ( not $opts->{no_compress_comment} and ${$html} =~ /$PACKER_COMMENT/s ) {
@@ -345,7 +350,7 @@ HTML::Packer - Another HTML code cleaner
 
 =head1 VERSION
 
-Version 0.05_04
+Version 0.05_05
 
 =head1 DESCRIPTION
 

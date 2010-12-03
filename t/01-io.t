@@ -51,12 +51,13 @@ my $css_input = <<EOT;
 EOT
 
 my $js_expected_comp    = '<script type="javascript">/*<![CDATA[*/alert(\'test\');/*]]>*/</script><a href="/">link 1 </a> <a href="/"> link 2 </a>';
+my $js_expected_nocdata = '<script type="javascript">alert(\'test\');</script><a href="/">link 1 </a> <a href="/"> link 2 </a>';
 my $js_expected_nocomp  = '<script type="javascript">' . "\n\n\n\n" . '  alert(\'test\');</script><a href="/">link 1 </a> <a href="/"> link 2 </a>';
 
 my $css_expected_comp   = '<style type="text/css">' . "\nfoo{\nasdf:asdf;\new:12;\n}\n" . '</style><a href="/">link 1 </a> <a href="/"> link 2 </a>';
 my $css_expected_nocomp = '<style type="text/css">' . "\n\n  foo {\n    asdf:asdf;\n    ew:12;\n  }\n" . '</style><a href="/">link 1 </a> <a href="/"> link 2 </a>';
 
-my $not = 8;
+my $not = 9;
 
 SKIP: {
     eval( 'use HTML::Packer;' );
@@ -73,25 +74,29 @@ SKIP: {
     minTest( 's6', { remove_comments => 1, remove_newlines => 1, no_compress_comment => 1 }, 'Test _no_compress_ comment with no_compress_comment option.' );
 
     my $packer = HTML::Packer->init();
-    $packer->minify( \$js_input, { remove_comments => 1, remove_newlines => 1, do_javascript => 'minify' } );
+    my $js_comp_input   = $js_input;
+    my $js_cdata_input  = $js_input;
+    $packer->minify( \$js_comp_input, { remove_comments => 1, remove_newlines => 1, do_javascript => 'minify' } );
+    $packer->minify( \$js_cdata_input, { remove_comments => 1, remove_newlines => 1, do_javascript => 'minify', no_cdata => 1 } );
 
     eval( 'require JavaScript::Packer' );
     if ( $@ ) {
-        is( $js_input, $js_expected_nocomp, 'Test do_javascript.' );
+        is( $js_comp_input, $js_expected_nocomp, 'Test do_javascript. JavaScript::Packer not installed.' );
+        is( $js_cdata_input, $js_expected_nocomp, 'Test do_javascript 2. JavaScript::Packer not installed.' );
     }
     else {
-        is( $js_input, $js_expected_comp, 'Test do_javascript.' );
+        is( $js_comp_input, $js_expected_comp, 'Test do_javascript. JavaScript::Packer installed.' );
+        is( $js_cdata_input, $js_expected_nocdata, 'Test do_javascript 2. JavaScript::Packer installed.' );
     }
 
-    $packer = HTML::Packer->init();
     $packer->minify( \$css_input, { remove_comments => 1, remove_newlines => 1, do_stylesheet => 'pretty' } );
 
     eval( 'require CSS::Packer' );
     if ( $@ ) {
-        is( $css_input, $css_expected_nocomp, 'Test do_stylesheet.' );
+        is( $css_input, $css_expected_nocomp, 'Test do_stylesheet. CSS::Packer not installed.' );
     }
     else {
-        is( $css_input, $css_expected_comp, 'Test do_stylesheet.' );
+        is( $css_input, $css_expected_comp, 'Test do_stylesheet. CSS::Packer installed.' );
     }
 }
 

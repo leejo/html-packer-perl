@@ -1,5 +1,8 @@
 Revision history for HTML-Packer
 
+0.05_05 2010-12-03
+    - Added no_cdata option.
+
 0.05_04 2010-10-05
     - Changed required perl version to 5.8.9.
 
