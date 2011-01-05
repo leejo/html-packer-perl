@@ -8,7 +8,7 @@ use Regexp::RegGrp;
 
 # -----------------------------------------------------------------------------
 
-our $VERSION = '0.05_05';
+our $VERSION = '0.05_06';
 
 our @TAGS = (
     'a', 'abbr', 'acronym', 'address', 'b', 'bdo', 'big', 'button', 'cite',
@@ -350,7 +350,7 @@ HTML::Packer - Another HTML code cleaner
 
 =head1 VERSION
 
-Version 0.05_05
+Version 0.05_06
 
 =head1 DESCRIPTION
 
@@ -425,7 +425,7 @@ perldoc HTML::Packer
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2009 - 2010 Merten Falk, all rights reserved.
+Copyright 2009 - 2011 Merten Falk, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
