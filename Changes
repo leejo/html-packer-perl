@@ -1,5 +1,10 @@
 Revision history for HTML-Packer
 
+1.000   2011-01-17
+    - Changed versioning.
+    - Raised major version due to changes in versioning.
+    - Changed requirements to Regexp::RegGrp 1.000 due to changes in versioning.
+
 0.05_06 2011-01-05
     - Changed requirements to Regexp::RegGrp 0.04
 

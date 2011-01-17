@@ -5,7 +5,7 @@ use inc::Module::Install;
 
 all_from        'lib/HTML/Packer.pm';
 test_requires   'Test::More'        => 0;
-requires        'Regexp::RegGrp'    => "0.04";
+requires        'Regexp::RegGrp'    => "1.000";
 
 repository 'http://github.com/nevesenin/html-packer-perl';
 

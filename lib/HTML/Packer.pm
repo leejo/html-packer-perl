@@ -8,7 +8,7 @@ use Regexp::RegGrp;
 
 # -----------------------------------------------------------------------------
 
-our $VERSION = '0.05_06';
+our $VERSION = '1.000';
 
 our @TAGS = (
     'a', 'abbr', 'acronym', 'address', 'b', 'bdo', 'big', 'button', 'cite',
@@ -350,7 +350,7 @@ HTML::Packer - Another HTML code cleaner
 
 =head1 VERSION
 
-Version 0.05_06
+Version 1.000
 
 =head1 DESCRIPTION
 
