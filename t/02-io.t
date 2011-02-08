@@ -60,7 +60,7 @@ my $css_expected_nocomp = '<style type="text/css">' . "\n\n  foo {\n    asdf:asd
 my $not = 9;
 
 SKIP: {
-    eval( 'use HTML::Packer;' );
+    eval { use HTML::Packer; };
 
     skip( 'HTML::Packer not installed!', $not ) if ( $@ );
 
@@ -79,10 +79,10 @@ SKIP: {
     $packer->minify( \$js_comp_input, { remove_comments => 1, remove_newlines => 1, do_javascript => 'minify' } );
     $packer->minify( \$js_cdata_input, { remove_comments => 1, remove_newlines => 1, do_javascript => 'minify', no_cdata => 1 } );
 
-    eval( 'require JavaScript::Packer' );
+    eval "use JavaScript::Packer $HTML::Packer::REQUIRED_JAVASCRIPT_PACKER;";
     if ( $@ ) {
-        is( $js_comp_input, $js_expected_nocomp, 'Test do_javascript. JavaScript::Packer not installed.' );
-        is( $js_cdata_input, $js_expected_nocomp, 'Test do_javascript 2. JavaScript::Packer not installed.' );
+        is( $js_comp_input, $js_expected_nocomp, 'Test do_javascript. JavaScript::Packer >= ' . $HTML::Packer::REQUIRED_JAVASCRIPT_PACKER . ' not installed.' );
+        is( $js_cdata_input, $js_expected_nocomp, 'Test do_javascript 2. JavaScript::Packer >= ' . $HTML::Packer::REQUIRED_JAVASCRIPT_PACKER . ' not installed.' );
     }
     else {
         is( $js_comp_input, $js_expected_comp, 'Test do_javascript. JavaScript::Packer installed.' );
@@ -91,9 +91,9 @@ SKIP: {
 
     $packer->minify( \$css_input, { remove_comments => 1, remove_newlines => 1, do_stylesheet => 'pretty' } );
 
-    eval( 'require CSS::Packer' );
+    eval "use CSS::Packer $HTML::Packer::REQUIRED_CSS_PACKER;";
     if ( $@ ) {
-        is( $css_input, $css_expected_nocomp, 'Test do_stylesheet. CSS::Packer not installed.' );
+        is( $css_input, $css_expected_nocomp, 'Test do_stylesheet. CSS::Packer >= ' . $HTML::Packer::REQUIRED_CSS_PACKER . ' not installed.' );
     }
     else {
         is( $css_input, $css_expected_comp, 'Test do_stylesheet. CSS::Packer installed.' );
