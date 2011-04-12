@@ -1,5 +1,12 @@
 Revision history for HTML-Packer
 
+1.001_001   2011-04-12
+    - Added html5 option.
+    - Removed no_cdata option.
+    - Added tests.
+    - Minor bugfixes.
+    - Cleanup.
+
 1.001001   2011-03-07
     - Changed requirements to Regexp::RegGrp 1.000001 due to "undefined submatches bug" in Regexp::RegGrp.
     - Added accessors.

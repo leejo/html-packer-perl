@@ -8,13 +8,13 @@ use Regexp::RegGrp;
 
 # -----------------------------------------------------------------------------
 
-our $VERSION = '1.001001';
+our $VERSION = '1.001_001';
 
 our @BOOLEAN_ACCESSORS = (
     'remove_comments',
     'remove_newlines',
     'no_compress_comment',
-    'no_cdata',
+    'html5',
 );
 
 our @JAVASCRIPT_OPTS    = ( 'minify', 'shrink', 'base62' );
@@ -23,10 +23,15 @@ our @CSS_OPTS           = ( 'minify', 'pretty' );
 our $REQUIRED_JAVASCRIPT_PACKER = '1.002001';
 our $REQUIRED_CSS_PACKER        = '1.000001';
 
-our @TAGS = (
+our @SAVE_SPACE_ELEMENTS = (
     'a', 'abbr', 'acronym', 'address', 'b', 'bdo', 'big', 'button', 'cite',
     'del', 'dfn', 'em', 'font', 'i', 'input', 'ins', 'kbd', 'label', 'q',
     's', 'samp', 'select', 'small', 'strike', 'strong', 'sub', 'sup', 'u', 'var'
+);
+
+our @VOID_ELEMENTS = (
+        'area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input',
+        'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'
 );
 
 # Some regular expressions are from HTML::Clean
@@ -87,7 +92,7 @@ our $WHITESPACES    = [
 
 our $NEWLINES_TAGS = [
     {
-        regexp      => '(\s*)(<\s*\/?\s*(?:' . join( '|', @TAGS ) . ')[^>]*>)(\s*)',
+        regexp      => '(\s*)(<\s*\/?\s*(?:' . join( '|', @SAVE_SPACE_ELEMENTS ) . ')\b[^>]*>)(\s*)',
         replacement => sub {
             return sprintf( '%s%s%s', $_[0]->{submatches}->[0] ? ' ' : '', $_[0]->{submatches}->[1], $_[0]->{submatches}->[2] ? ' ' : '' );
         },
@@ -118,20 +123,34 @@ our $NEWLINES = [
     }
 ];
 
+our @REGGRPS        = ( 'newlines', 'newlines_tags', 'whitespaces', 'void_elements' );
+
+our $GLOBAL_REGGRP  = 'global';
+
 ##########################################################################################
 
 {
     no strict 'refs';
 
     foreach my $field ( @BOOLEAN_ACCESSORS ) {
-        next if defined *{'HTML::Packer::' . $field}{CODE};
+        next if defined *{ __PACKAGE__ . '::' . $field }{CODE};
 
-        *{'HTML::Packer::' . $field} = sub {
+        *{ __PACKAGE__ . '::' . $field} = sub {
             my ( $self, $value ) = @_;
 
             $self->{'_' . $field} = $value ? 1 : undef if ( defined( $value ) );
 
             return $self->{'_' . $field};
+        };
+    }
+
+    foreach my $reggrp ( @REGGRPS, $GLOBAL_REGGRP ) {
+        next if defined *{ __PACKAGE__ . '::reggrp_' . $reggrp }{CODE};
+
+        *{ __PACKAGE__ . '::reggrp_' . $reggrp } = sub {
+            my ( $self ) = shift;
+
+            return $self->{ '_reggrp_' . $reggrp };
         };
     }
 }
@@ -169,6 +188,8 @@ sub do_stylesheet {
 sub init {
     my $class = shift;
     my $self  = {};
+
+    bless( $self, $class );
 
     $self->{whitespaces}->{reggrp_data}   = $WHITESPACES;
     $self->{newlines}->{reggrp_data}      = $NEWLINES;
@@ -213,13 +234,17 @@ sub init {
             },
             store => sub {
                 my ( $opening, undef, $content, $closing )  = @{$_[0]->{submatches}};
-                my $opts                                    = $_[0]->{opts} || {};
 
                 if ( $content ) {
-                    if ( $opening =~ /<\s*script[^>]*(?:java|ecma)script[^>]*>/ ) {
+                    my $opening_re = '<\s*script' . ( $self->html5() ? '[^>]*>' : '[^>]*(?:java|ecma)script[^>]*>' );
+
+                    if ( $opening =~ /$opening_re/i ) {
+                        $opening =~ s/ type="(text\/)?(java|ecma)script"//i if ( $self->html5() );
+
                         if ( $self->javascript_packer() and $self->do_javascript() ) {
                             $self->javascript_packer()->minify( \$content, { compress => $self->do_javascript() } );
-                            unless ( $self->no_cdata() ) {
+
+                            unless ( $self->html5() ) {
                                 $content = '/*<![CDATA[*/' . $content . '/*]]>*/';
                             }
                         }
@@ -235,12 +260,8 @@ sub init {
                     $content = '';
                 }
 
-                # I don't like this, but
-                # $self->{whitespaces}->{reggrp}->exec( \$opening );
-                # will not work. It isn't initialized jet.
-                # If someone has a better idea, please let me know
-                $self->_process_wrapper( 'whitespaces', \$opening );
-                $self->_process_wrapper( 'whitespaces', \$closing );
+                $self->reggrp_whitespaces()->exec( \$opening );
+                $self->reggrp_whitespaces()->exec( \$closing );
 
                 return $opening . $content . $closing;
             },
@@ -248,18 +269,26 @@ sub init {
         }
     ];
 
-    map {
-        $self->{$_}->{reggrp} = Regexp::RegGrp->new( { reggrp => $self->{$_}->{reggrp_data} } );
-    } ( 'newlines', 'newlines_tags', 'whitespaces' );
-
-    $self->{global}->{reggrp} = Regexp::RegGrp->new(
+    $self->{void_elements}->{reggrp_data} = [
         {
-            reggrp          => $self->{global}->{reggrp_data},
+            regexp      => '<\s*((?:' . join( '|', @VOID_ELEMENTS ) . ')\b[^>]*)\s*\/>',
+            replacement => sub {
+                return '<' . $_[0]->{submatches}->[0] . '>';
+            },
+            modifier    => 'ism'
+        }
+    ];
+
+    map {
+        $self->{ '_reggrp_' . $_ } = Regexp::RegGrp->new( { reggrp => $self->{$_}->{reggrp_data} } );
+    } @REGGRPS;
+
+    $self->{ '_reggrp_' . $GLOBAL_REGGRP } = Regexp::RegGrp->new(
+        {
+            reggrp          => $self->{$GLOBAL_REGGRP}->{reggrp_data},
             restore_pattern => qr/<!--~(\d+)~-->/
         }
     );
-
-    bless( $self, $class );
 
     return $self;
 }
@@ -315,14 +344,17 @@ sub minify {
         }
     }
 
-    $self->{global}->{reggrp}->exec( $html, $opts );
-    $self->{whitespaces}->{reggrp}->exec( $html, $opts );
+    $self->reggrp_global()->exec( $html );
+    $self->reggrp_whitespaces()->exec( $html );
     if ( $self->remove_newlines() ) {
-        $self->{newlines_tags}->{reggrp}->exec( $html );
-        $self->{newlines}->{reggrp}->exec( $html );
+        $self->reggrp_newlines_tags()->exec( $html );
+        $self->reggrp_newlines()->exec( $html );
+    }
+    if ( $self->html5() ) {
+        $self->reggrp_void_elements()->exec( $html );
     }
 
-    $self->{global}->{reggrp}->restore_stored( $html );
+    $self->reggrp_global()->restore_stored( $html );
 
     return ${$html} if ( $cont eq 'scalar' );
 }
@@ -363,12 +395,6 @@ sub css_packer {
     return $self->{_css_packer};
 }
 
-sub _process_wrapper {
-    my ( $self, $reg_name, $in, $opts ) = @_;
-
-    $self->{$reg_name}->{reggrp}->exec( $in, $opts );
-}
-
 1;
 
 __END__
@@ -379,7 +405,7 @@ HTML::Packer - Another HTML code cleaner
 
 =head1 VERSION
 
-Version 1.001001
+Version 1.001_001
 
 =head1 DESCRIPTION
 
@@ -432,7 +458,11 @@ If not set to a true value it is allowed to set a HTML comment that prevents the
 
     <!-- HTML::Packer _no_compress_ -->
 
-Is set by default.
+Is not set by default.
+
+=item html5
+
+If set to a true value closing slashes will be removed from void elements.
 
 =back
 
@@ -442,8 +472,8 @@ Merten Falk, C<< <nevesenin at cpan.org> >>
 
 =head1 BUGS
 
-Please report any bugs or feature requests to C<bug-html-packer at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=HTML-Packer>.  I will be notified, and then you'll
+Please report any bugs or feature requests through
+the web interface at L<https://github.com/nevesenin/html-packer-perl/issues>. I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
 
 =head1 SUPPORT

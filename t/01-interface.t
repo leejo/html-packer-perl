@@ -16,7 +16,7 @@ SKIP: {
     ok( ! $packer->remove_comments(), 'Default value for remove_comments.' );
     ok( ! $packer->remove_newlines(), 'Default value for remove_newlines.' );
     ok( ! $packer->no_compress_comment(), 'Default value for no_compress_comment.' );
-    ok( ! $packer->no_cdata(), 'Default value for no_cdata.' );
+    ok( ! $packer->html5(), 'Default value for no_cdata.' );
     ok( ! $packer->do_javascript(), 'Default value for do_javascript.' );
     ok( ! $packer->do_stylesheet(), 'Default value for do_stylesheet.' );
 
@@ -35,10 +35,10 @@ SKIP: {
     $packer->no_compress_comment( 0 );
     ok( ! $packer->no_compress_comment(), 'Unset no_compress_comment.' );
 
-    $packer->no_cdata( 1 );
-    ok( $packer->no_cdata(), 'Set no_cdata.' );
-    $packer->no_cdata( 0 );
-    ok( ! $packer->no_cdata(), 'Unset no_cdata.' );
+    $packer->html5( 1 );
+    ok( $packer->html5(), 'Set html5.' );
+    $packer->html5( 0 );
+    ok( ! $packer->html5(), 'Unset html5.' );
 
     $packer->do_javascript( 'minify' );
     is( $packer->do_javascript(), 'minify', 'Set do_javascript to "minify".' );
@@ -87,7 +87,7 @@ SKIP: {
     ok( ! $packer->remove_comments(), 'Default value for remove_comments is still set.' );
     ok( ! $packer->remove_newlines(), 'Default value for remove_newlines is still set.' );
     ok( ! $packer->no_compress_comment(), 'Default value for no_compress_comment is still set.' );
-    ok( ! $packer->no_cdata(), 'Default value for no_cdata is still set.' );
+    ok( ! $packer->html5(), 'Default value for html5 is still set.' );
     ok( ! $packer->do_javascript(), 'Default value for do_javascript is still set.' );
     ok( ! $packer->do_stylesheet(), 'Default value for do_stylesheet is still set.' );
 
@@ -97,7 +97,7 @@ SKIP: {
             remove_comments     => 1,
             remove_newlines     => 1,
             no_compress_comment => 1,
-            no_cdata            => 1,
+            html5               => 1,
             do_javascript       => 'minify',
             do_stylesheet       => 'minify'
         }
@@ -106,7 +106,7 @@ SKIP: {
     ok( $packer->remove_comments(), 'Set remove_comments again.' );
     ok( $packer->remove_newlines(), 'Set remove_newlines again.' );
     ok( $packer->no_compress_comment(), 'Set no_compress_comment again.' );
-    ok( $packer->no_cdata(), 'Set no_cdata again.' );
+    ok( $packer->html5(), 'Set html5 again.' );
     ok( $packer->do_javascript(), 'Set do_javascript to "minify" again.' );
     ok( $packer->do_stylesheet(), 'Set do_stylesheet to "minify" again.' );
 
