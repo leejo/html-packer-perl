@@ -8,7 +8,7 @@ use Regexp::RegGrp;
 
 # -----------------------------------------------------------------------------
 
-our $VERSION = '1.001_001';
+our $VERSION = '1.001_002';
 
 our @BOOLEAN_ACCESSORS = (
     'remove_comments',
@@ -17,7 +17,7 @@ our @BOOLEAN_ACCESSORS = (
     'html5',
 );
 
-our @JAVASCRIPT_OPTS    = ( 'minify', 'shrink', 'base62' );
+our @JAVASCRIPT_OPTS    = ( 'clean', 'obfuscate', 'shrink', 'best' );
 our @CSS_OPTS           = ( 'minify', 'pretty' );
 
 our $REQUIRED_JAVASCRIPT_PACKER = '1.002001';
@@ -405,7 +405,7 @@ HTML::Packer - Another HTML code cleaner
 
 =head1 VERSION
 
-Version 1.001_001
+Version 1.001_002
 
 =head1 DESCRIPTION
 
@@ -442,7 +442,7 @@ ALL newlines will be removed if 'remove_newlines' has a true value.
 
 =item do_javascript
 
-Defines compression level for javascript. Possible values are 'minify', 'shrink' and 'base62'.
+Defines compression level for javascript. Possible values are 'clean', 'obfuscate', 'shrink' and 'best'.
 Default is no compression for javascript.
 This option only takes effect if L<JavaScript::Packer> is installed.
 

@@ -1,5 +1,9 @@
 Revision history for HTML-Packer
 
+1.001_002   2011-05-20
+    - Fixed tests. Thanks to Kent Fredric.
+    - Changed possible values for do_javascript options.
+
 1.001_001   2011-04-12
     - Added html5 option.
     - Removed no_cdata option.

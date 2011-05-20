@@ -40,14 +40,14 @@ SKIP: {
     $packer->html5( 0 );
     ok( ! $packer->html5(), 'Unset html5.' );
 
-    $packer->do_javascript( 'minify' );
-    is( $packer->do_javascript(), 'minify', 'Set do_javascript to "minify".' );
+    $packer->do_javascript( 'clean' );
+    is( $packer->do_javascript(), 'clean', 'Set do_javascript to "clean".' );
     $packer->do_javascript( 'shrink' );
     is( $packer->do_javascript(), 'shrink', 'Set do_javascript to "shrink".' );
-    $packer->do_javascript( 'base62' );
-    is( $packer->do_javascript(), 'base62', 'Set do_javascript to "base62".' );
+    $packer->do_javascript( 'obfuscate' );
+    is( $packer->do_javascript(), 'obfuscate', 'Set do_javascript to "obfuscate".' );
     $packer->do_javascript( 'foo' );
-    is( $packer->do_javascript(), 'base62', 'Setting do_javascript to "foo" failed.' );
+    is( $packer->do_javascript(), 'obfuscate', 'Setting do_javascript to "foo" failed.' );
     $packer->do_javascript( '' );
     ok( ! $packer->do_javascript(), 'Unset do_javascript.' );
     $packer->do_javascript( 'bar' );
@@ -98,7 +98,7 @@ SKIP: {
             remove_newlines     => 1,
             no_compress_comment => 1,
             html5               => 1,
-            do_javascript       => 'minify',
+            do_javascript       => 'clean',
             do_stylesheet       => 'minify'
         }
     );
@@ -107,7 +107,7 @@ SKIP: {
     ok( $packer->remove_newlines(), 'Set remove_newlines again.' );
     ok( $packer->no_compress_comment(), 'Set no_compress_comment again.' );
     ok( $packer->html5(), 'Set html5 again.' );
-    ok( $packer->do_javascript(), 'Set do_javascript to "minify" again.' );
+    ok( $packer->do_javascript(), 'Set do_javascript to "clean" again.' );
     ok( $packer->do_stylesheet(), 'Set do_stylesheet to "minify" again.' );
 
 }
