@@ -8,7 +8,7 @@ use Regexp::RegGrp;
 
 # -----------------------------------------------------------------------------
 
-our $VERSION = '1.002';
+our $VERSION = '1.002001';
 
 our @BOOLEAN_ACCESSORS = (
     'remove_comments',
@@ -30,13 +30,13 @@ our @SAVE_SPACE_ELEMENTS = (
 );
 
 our @VOID_ELEMENTS = (
-        'area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input',
-        'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'
+    'area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input',
+    'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'
 );
 
 # Some regular expressions are from HTML::Clean
 
-our $COMMENT        = '((?>\s*))(<!--(?:(?:[^#\[]|(?! google_ad_section_)).*?)?-->)((?>\s*))';
+our $COMMENT        = '((?>\s*))(<!--(?:(?![#\[]| google_ad_section_).*?)?-->)((?>\s*))';
 
 our $PACKER_COMMENT = '<!--\s*HTML::Packer\s*(\w+)\s*-->';
 
@@ -59,7 +59,7 @@ our $WHITESPACES    = [
         modifier    => 'm'
     },
     {
-        regexp      => '\s*$',
+        regexp      => '[^\S\n]*$',
         replacement => '',
         modifier    => 'm'
     },
@@ -405,7 +405,7 @@ HTML::Packer - Another HTML code cleaner
 
 =head1 VERSION
 
-Version 1.002
+Version 1.002001
 
 =head1 DESCRIPTION
 

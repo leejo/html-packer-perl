@@ -26,10 +26,10 @@ my $js_input = <<EOT;
 
 EOT
 
-my $js_expected             = '<script type="javascript">/*<![CDATA[*/alert(\'test\');/*]]>*/</script><a href="/">link 1 </a> <a href="/"> link 2 </a>';
-my $js_expected_html5       = '<script>alert(\'test\');</script><a href="/">link 1 </a> <a href="/"> link 2 </a>';
-my $js_expected_html5_no_js = '<script>' . "\n\n\n\n" . '  alert(\'test\');</script><a href="/">link 1 </a> <a href="/"> link 2 </a>';
-my $js_expected_no_js       = '<script type="javascript">' . "\n\n\n\n" . '  alert(\'test\');</script><a href="/">link 1 </a> <a href="/"> link 2 </a>';
+my $js_expected             = '<script type="javascript">/*<![CDATA[*/alert(\'test\');/*]]>*/</script> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
+my $js_expected_html5       = '<script>alert(\'test\');</script> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
+my $js_expected_html5_no_js = '<script>' . "\n\n\n\n" . '  alert(\'test\');</script> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
+my $js_expected_no_js       = '<script type="javascript">' . "\n\n\n\n" . '  alert(\'test\');</script> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
 
 my $css_input = <<EOT;
 
@@ -55,8 +55,8 @@ my $css_input = <<EOT;
 
 EOT
 
-my $css_expected        = '<style type="text/css">' . "\nfoo{\nasdf:asdf;\new:12;\n}\n" . '</style><a href="/">link 1 </a> <a href="/"> link 2 </a>';
-my $css_expected_no_css = '<style type="text/css">' . "\n\n  foo {\n    asdf:asdf;\n    ew:12;\n  }\n" . '</style><a href="/">link 1 </a> <a href="/"> link 2 </a>';
+my $css_expected        = '<style type="text/css">' . "\nfoo{\nasdf:asdf;\new:12;\n}\n" . '</style> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
+my $css_expected_no_css = '<style type="text/css">' . "\n\n  foo {\n    asdf:asdf;\n    ew:12;\n  }\n" . '</style> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
 
 my $html_input = <<EOT;
 <script type="javascript">/*<![CDATA[*/

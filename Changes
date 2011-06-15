@@ -1,5 +1,10 @@
 Revision history for HTML-Packer
 
+1.002001    2001-06-15
+    - Fixed embarrassing bug in comment regexp.
+    - Fixed tests.
+    - Added TODO.
+
 1.002   2011-06-07
     - Raised version number.
 
