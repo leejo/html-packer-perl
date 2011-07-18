@@ -1,6 +1,10 @@
 Revision history for HTML-Packer
 
-1.002001    2001-06-15
+1.003_001   2011-08-19
+    - Replaced map with foreach.
+    - Fixed bug in html5 handling. Thanks to Brian Cassidy.
+
+1.002001    2011-06-15
     - Fixed embarrassing bug in comment regexp.
     - Fixed tests.
     - Added TODO.

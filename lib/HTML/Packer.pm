@@ -8,7 +8,7 @@ use Regexp::RegGrp;
 
 # -----------------------------------------------------------------------------
 
-our $VERSION = '1.002001';
+our $VERSION = '1.003_001';
 
 our @BOOLEAN_ACCESSORS = (
     'remove_comments',
@@ -236,9 +236,10 @@ sub init {
                 my ( $opening, undef, $content, $closing )  = @{$_[0]->{submatches}};
 
                 if ( $content ) {
-                    my $opening_re = '<\s*script' . ( $self->html5() ? '[^>]*>' : '[^>]*(?:java|ecma)script[^>]*>' );
+                    my $opening_script_re   = '<\s*script' . ( $self->html5() ? '[^>]*>' : '[^>]*(?:java|ecma)script[^>]*>' );
+                    my $opening_style_re    = '<\s*style' . ( $self->html5() ? '[^>]*>' : '[^>]*text\/css[^>]*>' );
 
-                    if ( $opening =~ /$opening_re/i ) {
+                    if ( $opening =~ /$opening_script_re/i ) {
                         $opening =~ s/ type="(text\/)?(java|ecma)script"//i if ( $self->html5() );
 
                         if ( $self->javascript_packer() and $self->do_javascript() ) {
@@ -249,7 +250,9 @@ sub init {
                             }
                         }
                     }
-                    elsif ( $opening =~ /<\s*style[^>]*text\/css[^>]*>/ ) {
+                    elsif ( $opening =~ /$opening_style_re/i ) {
+                        $opening =~ s/ type="text\/css"//i if ( $self->html5() );
+
                         if ( $self->css_packer() and $self->do_stylesheet() ) {
                             $self->css_packer()->minify( \$content, { compress => $self->do_stylesheet() } );
                             $content = "\n" . $content if ( $self->do_stylesheet() eq 'pretty' );
@@ -279,9 +282,9 @@ sub init {
         }
     ];
 
-    map {
+    foreach ( @HTML::Packer::REGGRPS ) {
         $self->{ '_reggrp_' . $_ } = Regexp::RegGrp->new( { reggrp => $self->{$_}->{reggrp_data} } );
-    } @REGGRPS;
+    }
 
     $self->{ '_reggrp_' . $GLOBAL_REGGRP } = Regexp::RegGrp->new(
         {
@@ -405,7 +408,7 @@ HTML::Packer - Another HTML code cleaner
 
 =head1 VERSION
 
-Version 1.002001
+Version 1.003_001
 
 =head1 DESCRIPTION
 

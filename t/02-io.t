@@ -28,6 +28,7 @@ EOT
 
 my $js_expected             = '<script type="javascript">/*<![CDATA[*/alert(\'test\');/*]]>*/</script> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
 my $js_expected_html5       = '<script>alert(\'test\');</script> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
+
 my $js_expected_html5_no_js = '<script>' . "\n\n\n\n" . '  alert(\'test\');</script> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
 my $js_expected_no_js       = '<script type="javascript">' . "\n\n\n\n" . '  alert(\'test\');</script> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
 
@@ -55,8 +56,11 @@ my $css_input = <<EOT;
 
 EOT
 
-my $css_expected        = '<style type="text/css">' . "\nfoo{\nasdf:asdf;\new:12;\n}\n" . '</style> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
-my $css_expected_no_css = '<style type="text/css">' . "\n\n  foo {\n    asdf:asdf;\n    ew:12;\n  }\n" . '</style> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
+my $css_expected                = '<style type="text/css">' . "\nfoo{\nasdf:asdf;\new:12;\n}\n" . '</style> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
+my $css_expected_no_css         = '<style type="text/css">' . "\n\n  foo {\n    asdf:asdf;\n    ew:12;\n  }\n" . '</style> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
+
+my $css_expected_html5          = '<style>' . "\nfoo{\nasdf:asdf;\new:12;\n}\n" . '</style> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
+my $css_expected_html5_no_css   = '<style>' . "\n\n  foo {\n    asdf:asdf;\n    ew:12;\n  }\n" . '</style> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
 
 my $html_input = <<EOT;
 <script type="javascript">/*<![CDATA[*/
@@ -81,7 +85,7 @@ EOT
 my $html_expected       = '<script>alert(\'test\');</script><br><img src="/bild.jpg" alt="hmpf"> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
 my $html_expected_no_js = '<script>/*<![CDATA[*/' . "\n\n\n\n  " . 'alert(\'test\');/*]]>*/</script><br><img src="/bild.jpg" alt="hmpf"> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
 
-my $not = 10;
+my $not = 11;
 
 SKIP: {
     eval { use HTML::Packer; };
@@ -116,14 +120,20 @@ SKIP: {
         is( $html_input, $html_expected, 'Test do_javascript 3. JavaScript::Packer installed.' );
     }
 
-    $packer->minify( \$css_input, { remove_comments => 1, remove_newlines => 1, do_stylesheet => 'pretty' } );
+    my $css_comp_input  = $css_input;
+    my $css_html5_input = $css_input;
+
+    $packer->minify( \$css_comp_input, { remove_comments => 1, remove_newlines => 1, do_stylesheet => 'pretty', html5 => 0 } );
+    $packer->minify( \$css_html5_input, { remove_comments => 1, remove_newlines => 1, do_stylesheet => 'pretty', html5 => 1 } );
 
     eval "use CSS::Packer $HTML::Packer::REQUIRED_CSS_PACKER;";
     if ( $@ ) {
-        is( $css_input, $css_expected_no_css, 'Test do_stylesheet. CSS::Packer >= ' . $HTML::Packer::REQUIRED_CSS_PACKER . ' not installed.' );
+        is( $css_comp_input, $css_expected_no_css, 'Test do_stylesheet. CSS::Packer >= ' . $HTML::Packer::REQUIRED_CSS_PACKER . ' not installed.' );
+        is( $css_html5_input, $css_expected_html5_no_css, 'Test do_stylesheet 2. CSS::Packer >= ' . $HTML::Packer::REQUIRED_CSS_PACKER . ' not installed.' );
     }
     else {
-        is( $css_input, $css_expected, 'Test do_stylesheet. CSS::Packer installed.' );
+        is( $css_comp_input, $css_expected, 'Test do_stylesheet. CSS::Packer installed.' );
+        is( $css_html5_input, $css_expected_html5, 'Test do_stylesheet 2. CSS::Packer installed.' );
     }
 }
 
