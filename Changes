@@ -1,5 +1,8 @@
 Revision history for HTML-Packer
 
+1.004   2011-09-27
+    - Raised version number.
+
 1.003_001   2011-08-19
     - Replaced map with foreach.
     - Fixed bug in html5 handling. Thanks to Brian Cassidy.
