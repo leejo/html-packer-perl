@@ -1,5 +1,8 @@
 Revision history for HTML-Packer
 
+1.004001    2012-02-20
+    - Use gnutar to build distribution.
+
 1.004   2011-09-27
     - Raised version number.
 
