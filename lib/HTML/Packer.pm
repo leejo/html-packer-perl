@@ -8,7 +8,7 @@ use Regexp::RegGrp;
 
 # -----------------------------------------------------------------------------
 
-our $VERSION = '1.004001';
+our $VERSION = '2.00';
 
 our @BOOLEAN_ACCESSORS = (
     'remove_comments',
@@ -406,9 +406,13 @@ __END__
 
 HTML::Packer - Another HTML code cleaner
 
+=for html
+<a href='https://travis-ci.org/leejo/html-packer-perl?branch=master'><img src='https://travis-ci.org/leejo/html-packer-perl.svg?branch=master' alt='Build Status' /></a>
+<a href='https://coveralls.io/r/leejo/html-packer-perl'><img src='https://coveralls.io/repos/leejo/html-packer-perl/badge.png?branch=master' alt='Coverage Status' /></a>
+
 =head1 VERSION
 
-Version 1.004001
+Version 2.00
 
 =head1 DESCRIPTION
 
@@ -471,12 +475,13 @@ If set to a true value closing slashes will be removed from void elements.
 
 =head1 AUTHOR
 
-Merten Falk, C<< <nevesenin at cpan.org> >>
+Merten Falk, C<< <nevesenin at cpan.org> >>. Now maintained by Lee
+Johnson (LEEJO).
 
 =head1 BUGS
 
 Please report any bugs or feature requests through
-the web interface at L<https://github.com/nevesenin/html-packer-perl/issues>. I will be notified, and then you'll
+the web interface at L<https://github.com/leejo/html-packer-perl/issues>. I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
 
 =head1 SUPPORT

@@ -1,5 +1,12 @@
 Revision history for HTML-Packer
 
+2.00        2015-06-04
+    - New maintainer: LEEJO
+    - Repoint issue tracker/repo at leejo's fork
+    - Add .travis.yml for CI goodness
+    - Add Changes test
+    - Add MYMETA.json to .gitignore
+
 1.004001    2012-02-20
     - Use gnutar to build distribution.
 
@@ -57,7 +64,7 @@ Revision history for HTML-Packer
 0.05_02 2010-09-13
     - Changed requirements to Regexp::RegGrp 0.0201
 
-0.05_01
+0.05_01 2009-02-15
     - Moved regexp grouping stuff to Regexp::RegGrp.
     - Added object-oriented interface.
     - Switched tabs to soft tabs.

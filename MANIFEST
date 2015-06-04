@@ -16,7 +16,7 @@ lib/HTML/Packer.pm
 Makefile.PL
 MANIFEST
 META.yml
-README
+README.md
 t/00-load.t
 t/01-interface.t
 t/02-io.t
