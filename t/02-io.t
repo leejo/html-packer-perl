@@ -82,7 +82,7 @@ my $html_input = <<EOT;
 
 EOT
 
-my $html_expected       = '<script>alert(\'test\');</script><br><img src="/bild.jpg" alt="hmpf"> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
+my $html_expected       = '<script>alert(\'test\');</script> <br> <img src="/bild.jpg" alt="hmpf"> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
 my $html_expected_no_js = '<script>/*<![CDATA[*/' . "\n\n\n\n  " . 'alert(\'test\');/*]]>*/</script><br><img src="/bild.jpg" alt="hmpf"> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
 
 my $not = 11;
