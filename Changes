@@ -1,5 +1,8 @@
 Revision history for HTML-Packer
 
+2.01        2016-01-13
+    - Fix: newlines should pack to spaces as per W3C (thanks to basbloemsaat)
+
 2.00        2015-06-04
     - New maintainer: LEEJO
     - Repoint issue tracker/repo at leejo's fork
