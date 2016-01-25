@@ -8,7 +8,7 @@ use Regexp::RegGrp;
 
 # -----------------------------------------------------------------------------
 
-our $VERSION = '2.01';
+our $VERSION = '2.02';
 
 our @BOOLEAN_ACCESSORS = (
     'remove_comments',
@@ -185,6 +185,19 @@ sub do_stylesheet {
     return $self->{_do_stylesheet};
 }
 
+# these variables are used in the closures defined in the init function
+# below - we have to use globals as using $self within the closures leads
+# to a reference cycle and thus memory leak, and we can't scope them to
+# the init method as they may change. they are set by the minify sub
+our $remove_comments;
+our $remove_newlines;
+our $html5;
+our $do_javascript;
+our $do_stylesheet;
+our $js_packer;
+our $css_packer;
+our $reggrp_ws;
+
 sub init {
     my $class = shift;
     my $self  = {};
@@ -211,17 +224,17 @@ sub init {
         {
             regexp      => $COMMENT,
             replacement => sub {
-                return $self->remove_comments() ? (
-                    $self->remove_newlines() ? ' ' : (
+                return $remove_comments ? (
+                    $remove_newlines ? ' ' : (
                         ( $_[0]->{submatches}->[0] =~ /\n/s or $_[0]->{submatches}->[2] =~ /\n/s ) ? "\n" : ''
                     )
                 ) : '<!--~' . $_[0]->{store_index} . '~-->';
             },
             store => sub {
-                my $ret = $self->remove_comments() ? '' : (
-                     ( ( not $self->remove_newlines() and $_[0]->{submatches}->[0] =~ /\n/s ) ? "\n" : '' ) .
+                my $ret = $remove_comments ? '' : (
+                     ( ( not $remove_newlines and $_[0]->{submatches}->[0] =~ /\n/s ) ? "\n" : '' ) .
                      $_[0]->{submatches}->[1] .
-                     ( ( not $self->remove_newlines() and $_[0]->{submatches}->[2] =~ /\n/s ) ? "\n" : '' )
+                     ( ( not $remove_newlines and $_[0]->{submatches}->[2] =~ /\n/s ) ? "\n" : '' )
                 );
 
                 return $ret;
@@ -236,26 +249,26 @@ sub init {
                 my ( $opening, undef, $content, $closing )  = @{$_[0]->{submatches}};
 
                 if ( $content ) {
-                    my $opening_script_re   = '<\s*script' . ( $self->html5() ? '[^>]*>' : '[^>]*(?:java|ecma)script[^>]*>' );
-                    my $opening_style_re    = '<\s*style' . ( $self->html5() ? '[^>]*>' : '[^>]*text\/css[^>]*>' );
+                    my $opening_script_re   = '<\s*script' . ( $html5 ? '[^>]*>' : '[^>]*(?:java|ecma)script[^>]*>' );
+                    my $opening_style_re    = '<\s*style' . ( $html5 ? '[^>]*>' : '[^>]*text\/css[^>]*>' );
 
                     if ( $opening =~ /$opening_script_re/i ) {
-                        $opening =~ s/ type="(text\/)?(java|ecma)script"//i if ( $self->html5() );
+                        $opening =~ s/ type="(text\/)?(java|ecma)script"//i if ( $html5 );
 
-                        if ( $self->javascript_packer() and $self->do_javascript() ) {
-                            $self->javascript_packer()->minify( \$content, { compress => $self->do_javascript() } );
+                        if ( $js_packer and $do_javascript ) {
+                            $js_packer->minify( \$content, { compress => $do_javascript } );
 
-                            unless ( $self->html5() ) {
+                            unless ( $html5 ) {
                                 $content = '/*<![CDATA[*/' . $content . '/*]]>*/';
                             }
                         }
                     }
                     elsif ( $opening =~ /$opening_style_re/i ) {
-                        $opening =~ s/ type="text\/css"//i if ( $self->html5() );
+                        $opening =~ s/ type="text\/css"//i if ( $html5 );
 
-                        if ( $self->css_packer() and $self->do_stylesheet() ) {
-                            $self->css_packer()->minify( \$content, { compress => $self->do_stylesheet() } );
-                            $content = "\n" . $content if ( $self->do_stylesheet() eq 'pretty' );
+                        if ( $css_packer and $do_stylesheet ) {
+                            $css_packer->minify( \$content, { compress => $do_stylesheet } );
+                            $content = "\n" . $content if ( $do_stylesheet eq 'pretty' );
                         }
                     }
                 }
@@ -263,8 +276,8 @@ sub init {
                     $content = '';
                 }
 
-                $self->reggrp_whitespaces()->exec( \$opening );
-                $self->reggrp_whitespaces()->exec( \$closing );
+                $reggrp_ws->exec( \$opening );
+                $reggrp_ws->exec( \$closing );
 
                 return $opening . $content . $closing;
             },
@@ -347,6 +360,16 @@ sub minify {
         }
     }
 
+	# (re)initialize variables used in the closures
+	$remove_comments = $self->remove_comments;
+	$remove_newlines = $self->remove_newlines;
+	$html5           = $self->html5;
+	$do_javascript   = $self->do_javascript;
+	$do_stylesheet   = $self->do_stylesheet;
+	$js_packer       = $self->javascript_packer;
+	$css_packer      = $self->css_packer;
+	$reggrp_ws       = $self->reggrp_whitespaces;
+
     $self->reggrp_global()->exec( $html );
     $self->reggrp_whitespaces()->exec( $html );
     if ( $self->remove_newlines() ) {
@@ -412,7 +435,7 @@ HTML::Packer - Another HTML code cleaner
 
 =head1 VERSION
 
-Version 2.01
+Version 2.02
 
 =head1 DESCRIPTION
 
