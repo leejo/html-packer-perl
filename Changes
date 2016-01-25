@@ -1,5 +1,8 @@
 Revision history for HTML-Packer
 
+2.02        2016-02-25
+    - Fix: memory leak due to reference cycles in reggrp_data closures
+
 2.01        2016-01-13
     - Fix: newlines should pack to spaces as per W3C (thanks to basbloemsaat)
 
