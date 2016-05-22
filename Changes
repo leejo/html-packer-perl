@@ -1,5 +1,8 @@
 Revision history for HTML-Packer
 
+2.03        2016-05-22
+    - Fix: require recent versions of deps to fix memory leaks
+
 2.02        2016-02-25
     - Fix: memory leak due to reference cycles in reggrp_data closures
 

@@ -20,6 +20,8 @@ README.md
 t/00-load.t
 t/01-interface.t
 t/02-io.t
+t/03-leaks.t
+t/04-leaks_full.t
 t/html/s1-expected.html
 t/html/s1.html
 t/html/s2-expected.html
