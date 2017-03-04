@@ -10,7 +10,7 @@ HTML::Packer - Another HTML code cleaner
 
 # VERSION
 
-Version 2.03
+Version 2.04
 
 # DESCRIPTION
 

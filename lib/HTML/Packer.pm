@@ -8,7 +8,7 @@ use Regexp::RegGrp;
 
 # -----------------------------------------------------------------------------
 
-our $VERSION = '2.03';
+our $VERSION = '2.04';
 
 our @BOOLEAN_ACCESSORS = (
     'remove_comments',
@@ -251,8 +251,12 @@ sub init {
                 if ( $content ) {
                     my $opening_script_re   = '<\s*script' . ( $html5 ? '[^>]*>' : '[^>]*(?:java|ecma)script[^>]*>' );
                     my $opening_style_re    = '<\s*style' . ( $html5 ? '[^>]*>' : '[^>]*text\/css[^>]*>' );
+					my $js_type_re          = q{type=['"]((application|text)/){0,1}(x-){0,1}(java|ecma)script['"]};
 
-                    if ( $opening =~ /$opening_script_re/i ) {
+                    if (
+						$opening =~ /$opening_script_re/i
+						&& ( $opening =~ /$js_type_re/i || $opening !~ /type/i )
+					) {
                         $opening =~ s/ type="(text\/)?(java|ecma)script"//i if ( $html5 );
 
                         if ( $js_packer and $do_javascript ) {
@@ -435,7 +439,7 @@ HTML::Packer - Another HTML code cleaner
 
 =head1 VERSION
 
-Version 2.03
+Version 2.04
 
 =head1 DESCRIPTION
 
