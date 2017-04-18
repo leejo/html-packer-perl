@@ -1,18 +1,33 @@
+#!perl
+
 use strict;
 use warnings;
 
-use inc::Module::Install;
+use ExtUtils::MakeMaker;
 
-all_from        'lib/HTML/Packer.pm';
-test_requires   'Test::More'        => 0;
-requires        'Regexp::RegGrp'    => "1.001_001";
-requires        'CSS::Packer'       => "2.01";
-requires        'JavaScript::Packer'=> "2.01";
-
-repository 'http://github.com/leejo/html-packer-perl';
-bugtracker 'http://github.com/leejo/html-packer-perl/issues';
-
-clean_files 't/html/s?-got.html';
-
-auto_install();
-WriteAll();
+WriteMakefile(
+  NAME          => 'HTML::Packer',
+  ABSTRACT_FROM => 'lib/HTML/Packer.pm',
+  VERSION_FROM  => 'lib/HTML/Packer.pm',
+  AUTHOR        => 'Lee Johnson <leejo@cpan.org>',
+  LICENSE       => 'perl',
+  PREREQ_PM => {
+    'Regexp::RegGrp'        => '1.001_001',
+    'CSS::Packer'           => "2.01",
+    'JavaScript::Packer'    => "2.01",
+  },
+  BUILD_REQUIRES => {
+    'Test::More'               => 0,
+  },
+  META_MERGE => {
+    resources => {
+      license    => 'http://dev.perl.org/licenses/',
+      homepage   => 'https://metacpan.org/module/HTML::Packer',
+      bugtracker => 'https://github.com/leejo/html-packer-perl/issues',
+      repository => 'https://github.com/leejo/html-packer-perl'
+    },
+  },
+  test => {
+    TESTS => 't/*.t',
+  },
+);

@@ -8,6 +8,9 @@ use Test::More;
 eval 'use HTML::Packer;';
 plan skip_all => 'HTML::Packer not installed!' if $@;
 
+eval "use JavaScript::Packer $HTML::Packer::REQUIRED_JAVASCRIPT_PACKER;";
+plan skip_all => "JavaScript::Packer $HTML::Packer::REQUIRED_JAVASCRIPT_PACKER not installed!" if $@;
+
 plan tests => 20;
 
 SKIP: {
@@ -54,8 +57,6 @@ EOT
 
             my $js_expected = "<script$attr_def>" . '/*<![CDATA[*/alert(\'test\');/*]]>*/</script> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
             my $js_expected_no_js = "<script$attr_def>" . "\n\n\n\n" . '  alert(\'test\');</script> <a href="/">link 1 </a> <a href="/"> link 2 </a>';
-
-            eval "use JavaScript::Packer $HTML::Packer::REQUIRED_JAVASCRIPT_PACKER;";
 
             my $js_comp_input   = $js_input;
             my $packer = HTML::Packer->init();
