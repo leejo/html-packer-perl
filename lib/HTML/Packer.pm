@@ -111,6 +111,9 @@ our $NEWLINES = [
             if ( $pre eq '>' and $post eq '<' ) {
                 $ret = $pre . $post;
             }
+            elsif ( $pre eq '-' and $post =~ /[\w]/ ) {
+                $ret = $pre . $post;
+            }
             else {
                 $ret = $pre . ' ' . $post;
             }
