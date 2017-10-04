@@ -108,14 +108,14 @@ our $NEWLINES = [
 
             my $ret;
 
-            if ( $pre eq '>' or $post eq '<' ) {
-                $ret = $pre . ' ' . $post;
+            if ( $pre eq '>' and $post eq '<' ) {
+                $ret = $pre . $post;
             }
-            elsif ( $pre =~ /[\w-]/ and $post =~ /[\w-]/ ) {
-                $ret = $pre . ' ' . $post;
+            elsif ( $pre eq '-' and $post =~ /[\w]/ ) {
+                $ret = $pre . $post;
             }
             else {
-                $ret = $pre . $post;
+                $ret = $pre . ' ' . $post;
             }
 
             return $ret;
