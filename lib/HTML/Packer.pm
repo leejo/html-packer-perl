@@ -12,7 +12,7 @@ our $VERSION = '2.06';
 
 our @BOOLEAN_ACCESSORS = (
     'remove_comments',
-    'remove_comments_safe',
+    'remove_comments_aggressive',
     'remove_newlines',
     'no_compress_comment',
     'html5',
@@ -192,7 +192,7 @@ sub do_stylesheet {
 # to a reference cycle and thus memory leak, and we can't scope them to
 # the init method as they may change. they are set by the minify sub
 our $remove_comments;
-our $remove_comments_safe;
+our $remove_comments_aggressive;
 our $remove_newlines;
 our $html5;
 our $do_javascript;
@@ -225,7 +225,7 @@ sub init {
             }
         },
         {
-            regexp      => $remove_comments_safe ? $COMMENT_SAFE : $COMMENT,
+            regexp      => $remove_comments_aggressive ? $COMMENT : $COMMENT_SAFE,
             replacement => sub {
                 return $remove_comments ? (
                     $remove_newlines ? ' ' : (
@@ -369,7 +369,7 @@ sub minify {
 
 	# (re)initialize variables used in the closures
 	$remove_comments = $self->remove_comments;
-	$remove_comments_safe = $self->remove_comments_safe;
+	$remove_comments_aggressive = $self->remove_comments_aggressive;
 	$remove_newlines = $self->remove_newlines;
 	$html5           = $self->html5;
 	$do_javascript   = $self->do_javascript;
@@ -472,12 +472,12 @@ Second argument must be a hashref of options. Possible options are
 
 =item remove_comments
 
-HTML-Comments will be removed if 'remove_comments' has a true value.
+HTML-Comments will be removed if 'remove_comments' has a true value.  Comments starting with C<<!--#>,
+C<<!--[> or C<<!-- google_ad_section_> will be preserved unless 'remove_comments_aggressive' has a true value. 
 
-=item remove_comments_safe
+=item remove_comments_aggressive
 
-HTML-Comments starting with C<<!--#>, C<<!--[> or C<<!-- google_ad_section_> will be preserved if
-'remove_comments_safe' has a true value. Requires 'remove_comments' to be set to take effect.
+See 'remove_comments'; requires 'remove_comments' to be set to take effect.
 
 =item remove_newlines
 
