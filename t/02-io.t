@@ -100,7 +100,7 @@ SKIP: {
     minTest( 's4', { remove_comments => 1, remove_newlines => 1 }, 'Test remove_newlines and remove_comments.' );
     minTest( 's5', { remove_comments => 1, remove_newlines => 1 }, 'Test _no_compress_ comment.' );
     minTest( 's6', { remove_comments => 1, remove_newlines => 1, no_compress_comment => 1 }, 'Test _no_compress_ comment with no_compress_comment option.' );
-    minTest( 's7', { remove_comments => 1, remove_comments_aggressive => 1 }, 'Test aggresive comment removal.' );
+    minTest( 's7', { remove_comments_aggressive => 1 }, 'Test aggresive comment removal.' );
 
     my $packer = HTML::Packer->init();
     my $js_comp_input   = $js_input;
