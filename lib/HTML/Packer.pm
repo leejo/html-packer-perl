@@ -8,7 +8,7 @@ use Regexp::RegGrp;
 
 # -----------------------------------------------------------------------------
 
-our $VERSION = '2.07';
+our $VERSION = '2.08';
 
 our @BOOLEAN_ACCESSORS = (
     'remove_comments',
@@ -448,7 +448,7 @@ HTML::Packer - Another HTML code cleaner
 
 =head1 VERSION
 
-Version 2.07
+Version 2.08
 
 =head1 DESCRIPTION
 
