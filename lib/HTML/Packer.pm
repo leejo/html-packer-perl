@@ -9,7 +9,7 @@ use Digest::SHA qw(sha256_base64 sha384_base64 sha512_base64);
 
 # -----------------------------------------------------------------------------
 
-our $VERSION = '2.08';
+our $VERSION = '2.09';
 
 our @BOOLEAN_ACCESSORS = (
     'remove_comments',
@@ -493,7 +493,7 @@ HTML::Packer - Another HTML code cleaner
 
 =head1 VERSION
 
-Version 2.08
+Version 2.09
 
 =head1 DESCRIPTION
 
