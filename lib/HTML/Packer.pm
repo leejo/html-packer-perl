@@ -275,7 +275,7 @@ sub init {
                 if ( $content ) {
                     my $opening_script_re   = '<\s*script' . ( $html5 ? '[^>]*>' : '[^>]*(?:java|ecma)script[^>]*>' );
                     my $opening_style_re    = '<\s*style' . ( $html5 ? '[^>]*>' : '[^>]*text\/css[^>]*>' );
-					my $js_type_re          = q{type=['"]((application|text)/){0,1}(x-){0,1}(java|ecma)script['"]};
+					my $js_type_re          = q{type=['"]((((application|text)/){0,1}(x-){0,1}(java|ecma)script)|module)['"]};
 
                     if (
 						$opening =~ /$opening_script_re/i
