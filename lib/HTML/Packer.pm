@@ -6,6 +6,7 @@ use warnings;
 use Carp;
 use Regexp::RegGrp;
 use Digest::SHA qw(sha256_base64 sha384_base64 sha512_base64);
+use Safe::Isa;
 
 # -----------------------------------------------------------------------------
 
@@ -352,7 +353,7 @@ sub minify {
 
     unless (
         ref( $_[0] ) and
-        $_[0]->isa( __PACKAGE__ )
+        $_[0]->$_isa( __PACKAGE__ )
     ) {
         $self = __PACKAGE__->init();
 
