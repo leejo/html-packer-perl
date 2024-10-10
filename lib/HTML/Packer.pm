@@ -10,7 +10,7 @@ use Safe::Isa;
 
 # -----------------------------------------------------------------------------
 
-our $VERSION = '2.10';
+our $VERSION = '2.11';
 
 our @BOOLEAN_ACCESSORS = (
     'remove_comments',
@@ -494,7 +494,7 @@ HTML::Packer - Another HTML code cleaner
 
 =head1 VERSION
 
-Version 2.10
+Version 2.11
 
 =head1 DESCRIPTION
 
