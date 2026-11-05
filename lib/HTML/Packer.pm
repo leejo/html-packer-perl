@@ -10,7 +10,7 @@ use Safe::Isa;
 
 # -----------------------------------------------------------------------------
 
-our $VERSION = '2.11';
+our $VERSION = '2.12';
 
 our @BOOLEAN_ACCESSORS = (
     'remove_comments',
@@ -501,7 +501,7 @@ HTML::Packer - Another HTML code cleaner
 
 =head1 VERSION
 
-Version 2.11
+Version 2.12
 
 =head1 DESCRIPTION
 
@@ -594,10 +594,11 @@ C<E<lt>scriptE<gt>> or C<E<lt>styleE<gt>> tag.
 Merten Falk, C<< <nevesenin at cpan.org> >>. Now maintained by Lee
 Johnson (LEEJO) with contributions from:
 
-	Alexander Krizhanovsky <ak@natsys-lab.com>
-	Bas Bloemsaat <bas@bloemsaat.com>
-	girst <girst@users.noreply.github.com>
-	Ankit Pati (ANKITPATI) <contact@ankitpati.in>
+	Alexander Krizhanovsky
+	Bas Bloemsaat
+	girst
+	Ankit Pati (ANKITPATI)
+	Nigel Horne (nigelhorne)
 
 =head1 BUGS
 
